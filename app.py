@@ -1,85 +1,118 @@
-import streamlit as st
+  import streamlit as st
 import cv2
 import numpy as np
+import time
 
 # Page configuration
 st.set_page_config(
-    page_title="AEGIS-GUARD | AI Border Defense Shield",
+    page_title="AEGIS-GUARD | AI Border Defense",
     page_icon="🛡️",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
-# Custom Styling for Tactical Dark Mode
+# Custom Styling
 st.markdown("""
 <style>
     .stApp { background-color: #0b0f19; color: #ffffff; }
-    .stButton>button { width: 100%; background-color: #d9534f; color: white; border-radius: 5px; font-weight: bold; }
-    .stButton>button:hover { background-color: #c9302c; color: white; }
+    .stButton>button { width: 100%; font-weight: bold; }
+    .stTextInput>div>div>input { background-color: #1e293b; color: white; }
 </style>
 """, unsafe_allow_html=True)
 
-# Sidebar - Command Controls
-st.sidebar.title("🎛️ Command Controls")
-st.sidebar.subheader("System Status")
-st.sidebar.success("AIR-GAPPED MESH: ONLINE")
-st.sidebar.info("BASE LOCATION: SECTOR 4-NORTH")
+# Initialize Session State for Authentication
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+if "username" not in st.session_state:
+    st.session_state["username"] = ""
+if "role" not in st.session_state:
+    st.session_state["role"] = ""
 
-st.sidebar.markdown("---")
-sensitivity = st.sidebar.slider("Sensor Sensitivity Level", 1, 100, 75)
-alert_threshold = st.sidebar.slider("Motion Detection Threshold (m)", 0.5, 5.0, 1.2)
-
-# Main Title Header
-st.title("🛡️ AEGIS-GUARD: Zero-Network AI Border Defense Shield")
-st.caption("Team Guardian | Real-Time Tactical Motion & Thermal Surveillance")
-st.markdown("---")
-
-# Main Dashboard Columns
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    st.subheader("📹 Live Tactical Surveillance Feed")
-    feed_mode = st.radio(
-        "Select Sensor Mode:", 
-        ["Thermal Simulation", "Motion Detection Radar", "Standard Night Vision"], 
-        horizontal=True
-    )
+# --- LOGIN SCREEN ---
+if not st.session_state["logged_in"]:
+    st.title("🛡️ AEGIS-GUARD: Secure Access Portal")
+    st.caption("Zero-Network AI Border Defense System | Tactical Authentication")
+    st.markdown("---")
     
-    run_feed = st.checkbox("Activate Sensor Feed", value=True)
-    frame_placeholder = st.empty()
+    col_a, col_b, col_c = st.columns([1, 2, 1])
+    with col_b:
+        st.subheader("🔑 Operator Login")
+        user_input = st.text_input("Operator Call Sign / Username", value="Command-01")
+        pass_input = st.text_input("Access PIN / Password", type="password", value="1234")
+        role_input = st.selectbox("Assign Role", ["Base Command Officer", "Field Patrol Operator", "System Administrator"])
+        
+        if st.button("LOGIN TO TACTICAL DASHBOARD"):
+            if user_input and pass_input:
+                st.session_state["logged_in"] = True
+                st.session_state["username"] = user_input
+                st.session_state["role"] = role_input
+                st.rerun()
+            else:
+                st.error("Please enter valid credentials.")
+
+# --- MAIN DASHBOARD (AFTER LOGIN) ---
+else:
+    # Sidebar Setup
+    st.sidebar.title("🎛️ Command Center")
+    st.sidebar.write(f"**Operator:** {st.session_state['username']}")
+    st.sidebar.write(f"**Role:** {st.session_state['role']}")
     
-    if run_feed:
-        # Create simulated tactical video frame
+    if st.sidebar.button("Logout"):
+        st.session_state["logged_in"] = False
+        st.rerun()
+
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("📡 Offline Mesh Telemetry")
+    st.sidebar.success("AIR-GAPPED MESH: ACTIVE")
+    st.sidebar.info("LATENCY: <2ms (LOCAL EDGE)")
+    
+    sector_select = st.sidebar.selectbox("Active Sector", ["Sector 4-B (High Threat)", "Sector 1-A (Clear)", "Border Gate West"])
+    sensitivity = st.sidebar.slider("AI Motion Detection Threshold", 10, 100, 75)
+
+    # Dashboard Header
+    st.title("🛡️ AEGIS-GUARD Tactical Surveillance")
+    st.caption(f"Connected Sector: {sector_select} | Offline AI Inference Engine")
+    st.markdown("---")
+
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        st.subheader("📹 Real-Time Edge Surveillance Feed")
+        feed_mode = st.radio("Sensor Mode:", ["Thermal Simulation", "Motion Detection Radar", "Standard Night Vision"], horizontal=True)
+        
+        # Synthetic Feed Generator
         img = np.zeros((360, 640, 3), dtype=np.uint8)
         
         if feed_mode == "Thermal Simulation":
-            # Simulate a thermal heat signatures
-            cv2.circle(img, (320, 180), 60, (0, 0, 255), -1)
+            cv2.circle(img, (320, 180), 65, (0, 0, 255), -1)
             cv2.circle(img, (320, 180), 30, (0, 165, 255), -1)
-            cv2.putText(img, "THERMAL TARGET LOCK", (160, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+            cv2.putText(img, "THERMAL LOCK: HUMAN SIGNATURE", (120, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
         elif feed_mode == "Motion Detection Radar":
-            # Simulate a motion tracking bounding box
             cv2.rectangle(img, (200, 100), (440, 280), (0, 255, 0), 2)
             cv2.line(img, (320, 100), (320, 280), (0, 255, 0), 1)
             cv2.line(img, (200, 190), (440, 190), (0, 255, 0), 1)
-            cv2.putText(img, "MOTION LOCK: SECTOR 4-B", (150, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            cv2.putText(img, f"MOTION SENSITIVITY: {sensitivity}%", (160, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
         else:
-            # Simulate night vision filter
-            img[:, :, 1] = 120
-            cv2.putText(img, "NIGHT VISION ACTIVE (INFRARED)", (120, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            img[:, :, 1] = 110
+            cv2.putText(img, "INFRARED NIGHT VISION ACTIVE", (140, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
-        frame_placeholder.image(img, channels="BGR", use_container_width=True)
+        st.image(img, channels="BGR", use_container_width=True)
 
-with col2:
-    st.subheader("🚨 Sector Threat Alert System")
-    st.error("⚠️ CRITICAL ALERT: Intrusion Detected in Sector 4-B")
-    st.warning(f"Sensor Sensitivity Set To: {sensitivity}%")
-    st.info(f"Target Velocity: {alert_threshold} m/s | Lock Status: HELD")
-    
-    st.markdown("---")
-    st.subheader("⚡ Tactical Actions")
-    if st.button("🚨 TRIGGER SILENT ALARM"):
-        st.success("Silent Alert Transmitted to Base Command!")
-    
-    if st.button("📡 BROADCAST MESH REPEAT"):
-        st.info("Mesh Signal Broadcasted Across Offline Nodes.")
+    with col2:
+        st.subheader("🚨 Threat & Protocol Status")
+        if "Sector 4-B" in sector_select:
+            st.error("⚠️ CRITICAL ALERT: Perimeter Breach Detected")
+            st.warning("Target Trajectory: Heading North-West")
+        else:
+            st.success("✅ Sector Perimeter Secure")
+            st.info("No Anomalies Detected")
+
+        st.markdown("---")
+        st.subheader("⚡ Tactical Response Protocols")
+        
+        if st.session_state["role"] in ["Base Command Officer", "System Administrator"]:
+            if st.button("🚨 TRIGGER SILENT BASE ALARM"):
+                st.success("Silent Emergency Signal Sent to Command HQ!")
+            if st.button("📡 BROADCAST MESH PROTOCOL"):
+                st.info("Mesh Nodes Synchronized Across Offline Network.")
+        else:
+            st.info("🔒 Field Patrol Role: Read-Only Emergency Controls")          
