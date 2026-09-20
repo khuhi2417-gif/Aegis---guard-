@@ -26,14 +26,13 @@ if "logged_in" not in st.session_state:
 if "logs" not in st.session_state:
     st.session_state["logs"] = []
 
-# Initialize OpenCV Human Detector
+# Initialize OpenCV Detector (Haar Cascade - Highly Compatible)
 @st.cache_resource
 def load_detector():
-    hog = cv2.HOGDescriptor()
-    hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
-    return hog
+    cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+    return cv2.CascadeClassifier(cascade_path)
 
-hog = load_detector()
+detector = load_detector()
 
 # --- 1. LOGIN PORTAL ---
 if not st.session_state["logged_in"]:
@@ -98,20 +97,19 @@ else:
             ret, frame = cap.read()
             if ret:
                 frame = cv2.resize(frame, (640, 360))
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 
                 # Apply Real CV Spectrum Filters
                 if sensor_mode == "Real-Time Thermal":
-                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                     frame = cv2.applyColorMap(gray, cv2.COLORMAP_JET)
                     cv2.putText(frame, "THERMAL SPECTRUM ACTIVE", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
                 elif sensor_mode == "Infrared Night Vision":
-                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                     frame = cv2.applyColorMap(gray, cv2.COLORMAP_SUMMER)
                     cv2.putText(frame, "INFRARED NIGHT VISION ACTIVE", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
-                # Detect Humans and Draw Target Box
-                boxes, weights = hog.detectMultiScale(frame, winStride=(8, 8))
-                for (x, y, w, h) in boxes:
+                # Detect Faces/Targets and Draw Target Box
+                faces = detector.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+                for (x, y, w, h) in faces:
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                     cv2.putText(frame, "TARGET LOCK: HUMAN DETECTED", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
@@ -141,7 +139,6 @@ else:
                 timestamp = time.strftime("%H:%M:%S")
                 st.session_state["logs"].append(f"[{timestamp}] Silent Alarm Triggered by {st.session_state['user']}")
                 st.error("🚨 SIREN SOUNDED AT COMMAND BASE!")
-                # Plays HTML Audio Siren in Browser
                 st.components.v1.html(
                     '<audio autoplay><source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mpeg"></audio>',
                     height=0
