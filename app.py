@@ -1,16 +1,13 @@
-  import streamlit as st
+import streamlit as st
 import cv2
 import numpy as np
-import time
 
-# Page configuration
 st.set_page_config(
     page_title="AEGIS-GUARD | AI Border Defense",
     page_icon="🛡️",
     layout="wide"
 )
 
-# Custom Styling
 st.markdown("""
 <style>
     .stApp { background-color: #0b0f19; color: #ffffff; }
@@ -19,7 +16,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize Session State for Authentication
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 if "username" not in st.session_state:
@@ -27,7 +23,6 @@ if "username" not in st.session_state:
 if "role" not in st.session_state:
     st.session_state["role"] = ""
 
-# --- LOGIN SCREEN ---
 if not st.session_state["logged_in"]:
     st.title("🛡️ AEGIS-GUARD: Secure Access Portal")
     st.caption("Zero-Network AI Border Defense System | Tactical Authentication")
@@ -49,9 +44,7 @@ if not st.session_state["logged_in"]:
             else:
                 st.error("Please enter valid credentials.")
 
-# --- MAIN DASHBOARD (AFTER LOGIN) ---
 else:
-    # Sidebar Setup
     st.sidebar.title("🎛️ Command Center")
     st.sidebar.write(f"**Operator:** {st.session_state['username']}")
     st.sidebar.write(f"**Role:** {st.session_state['role']}")
@@ -68,7 +61,6 @@ else:
     sector_select = st.sidebar.selectbox("Active Sector", ["Sector 4-B (High Threat)", "Sector 1-A (Clear)", "Border Gate West"])
     sensitivity = st.sidebar.slider("AI Motion Detection Threshold", 10, 100, 75)
 
-    # Dashboard Header
     st.title("🛡️ AEGIS-GUARD Tactical Surveillance")
     st.caption(f"Connected Sector: {sector_select} | Offline AI Inference Engine")
     st.markdown("---")
@@ -79,7 +71,6 @@ else:
         st.subheader("📹 Real-Time Edge Surveillance Feed")
         feed_mode = st.radio("Sensor Mode:", ["Thermal Simulation", "Motion Detection Radar", "Standard Night Vision"], horizontal=True)
         
-        # Synthetic Feed Generator
         img = np.zeros((360, 640, 3), dtype=np.uint8)
         
         if feed_mode == "Thermal Simulation":
@@ -115,4 +106,4 @@ else:
             if st.button("📡 BROADCAST MESH PROTOCOL"):
                 st.info("Mesh Nodes Synchronized Across Offline Network.")
         else:
-            st.info("🔒 Field Patrol Role: Read-Only Emergency Controls")          
+            st.info("🔒 Field Patrol Role: Read-Only Emergency Controls")
