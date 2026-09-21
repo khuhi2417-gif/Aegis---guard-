@@ -12,7 +12,6 @@ DB_NAME = "aegis_secure.db"
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    # Users table
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
             username TEXT PRIMARY KEY,
@@ -20,7 +19,6 @@ def init_db():
             role TEXT NOT NULL
         )
     ''')
-    # Audit logs table
     c.execute('''
         CREATE TABLE IF NOT EXISTS logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +29,6 @@ def init_db():
         )
     ''')
     
-    # Create default admin account if table is empty
     c.execute('SELECT COUNT(*) FROM users')
     if c.fetchone()[0] == 0:
         default_hash = hashlib.sha256("1234".encode()).hexdigest()
@@ -78,23 +75,21 @@ def fetch_logs():
     conn.close()
     return rows
 
-# Initialize Database
 init_db()
 
 # --- 2. PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="AEGIS-GUARD | Secure Tactical AI",
+    page_title="AEGIS-GUARD | AI Soldier Shield",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- 3. ADVANCED STYLES & CRT HUD EFFECT ---
+# --- 3. ADVANCED HUD & CRT VISUAL STYLES ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Share+Tech+Mono&display=swap');
 
-    /* CRT Radar Overlay */
     .stApp::before {
         content: " ";
         display: block;
@@ -107,7 +102,6 @@ st.markdown("""
         pointer-events: none;
     }
 
-    /* Dark Theme Setup */
     .stApp {
         background-color: #03070d;
         background-image: 
@@ -126,23 +120,21 @@ st.markdown("""
         text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
     }
 
-    /* Glass Cards */
     .hud-card {
-        background: rgba(6, 18, 26, 0.7);
+        background: rgba(6, 18, 26, 0.75);
         backdrop-filter: blur(8px);
         border: 1px solid rgba(0, 255, 204, 0.3);
         border-radius: 8px;
-        padding: 15px;
+        padding: 12px;
         text-align: center;
         box-shadow: 0 0 15px rgba(0, 255, 204, 0.15);
     }
     .hud-card-critical {
-        background: rgba(30, 5, 12, 0.7);
+        background: rgba(30, 5, 12, 0.75);
         border: 1px solid rgba(255, 0, 85, 0.5);
         box-shadow: 0 0 15px rgba(255, 0, 85, 0.2);
     }
 
-    /* Tactical Buttons */
     div.stButton > button {
         width: 100%;
         background: linear-gradient(135deg, rgba(0, 255, 204, 0.1), rgba(0, 0, 0, 0.8)) !important;
@@ -160,7 +152,6 @@ st.markdown("""
         box-shadow: 0 0 25px rgba(0, 255, 204, 0.8) !important;
     }
 
-    /* Radar animation */
     .radar {
         width: 100px;
         height: 100px;
@@ -185,14 +176,16 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Session State Initializer
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
 # --- 4. SECURE AUTHENTICATION PORTAL ---
 if not st.session_state["logged_in"]:
+    # High-Tech Header Banner Image
+    st.image("https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80", use_container_width=True)
+    
     st.title("🛡️ AEGIS-GUARD: SECURE PORTAL")
-    st.caption("AIR-GAPPED ENCRYPTED AUTHENTICATION MATRIX")
+    st.caption("AIR-GAPPED ENCRYPTED AUTHENTICATION MATRIX FOR SOLDIER SURVIVABILITY")
     st.markdown("---")
     
     col_a, col_b, col_c = st.columns([1, 2, 1])
@@ -247,19 +240,26 @@ else:
     st.sidebar.caption("<center>RADAR SWEEP: ACTIVE</center>", unsafe_allow_html=True)
     st.sidebar.markdown("---")
 
+    # Visual Soldier Status Image Card in Sidebar
+    st.sidebar.markdown("### 🪖 SOLDIER TELEMETRY")
+    st.sidebar.image("https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=400&q=80", caption="PATROL TEAM ALPHA (HEALTH: 100%)", use_container_width=True)
+
     sector = st.sidebar.selectbox("FORWARD SECTOR", ["Sector 4-B (High Threat)", "Sector 1-A (Clear Outpost)", "Border Gate West"])
     sensor_mode = st.sidebar.radio("CV SPECTRUM FILTER", ["Real-Time Thermal", "Infrared Night Vision", "Standard Motion Bounding"])
     enable_audio = st.sidebar.checkbox("🔊 Audio Alerts", value=True)
 
-    # Narrative Banner
+    # Top Narrative Banner with High-Tech Tactical Visual
     st.markdown("""
-    <div style="background: rgba(255,0,85,0.15); border: 1px solid #ff0055; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px;">
-        <strong style="color: #ff0055;">⚠️ SOLDIER PROTECTION SYSTEM ACTIVE</strong><br>
-        <span style="font-size: 0.85rem; color: #00ffcc;">Edge AI local processing prevents ambush risks in air-gapped blackout zones.</span>
+    <div style="background: rgba(255,0,85,0.15); border: 1px solid #ff0055; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <strong style="color: #ff0055; font-size: 1.1rem;">⚠️ FORWARD SOLDIER PROTECTION SYSTEM</strong><br>
+            <span style="font-size: 0.85rem; color: #00ffcc;">Edge AI detects thermal threats in real-time to save soldier lives during communication blackouts.</span>
+        </div>
+        <span style="background: #ff0055; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">LIVE MISSION</span>
     </div>
     """, unsafe_allow_html=True)
 
-    # HUD Metrics
+    # 4 Key HUD Metrics Row
     m1, m2, m3, m4 = st.columns(4)
     with m1:
         st.markdown('<div class="hud-card"><div style="font-size:0.7rem; color:#888;">TARGET DISTANCE</div><div style="font-size:1.5rem; font-weight:800; color:#00ffcc;">142.4 M</div></div>', unsafe_allow_html=True)
@@ -303,7 +303,6 @@ else:
                 h, w, _ = frame.shape
                 cx, cy = w // 2, h // 2
 
-                # HUD Overlay
                 cv2.rectangle(frame, (w//4, h//4), (3*w//4, 3*h//4), box_color, 2)
                 cv2.putText(frame, status_text, (w//4, h//4 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, box_color, 2)
                 cv2.circle(frame, (cx, cy), 35, box_color, 1)
@@ -313,8 +312,11 @@ else:
                 if sensor_mode == "Real-Time Thermal" and enable_audio:
                     st.components.v1.html('<audio autoplay><source src="https://www.soundjay.com/buttons/beep-07a.mp3" type="audio/mpeg"></audio>', height=0)
             cap.release()
+        else:
+            # Fallback High-Tech Sample Image when camera is unselected
+            st.image("https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80", caption="SAMPLE THERMAL SCOPE STREAM (STANDBY)", use_container_width=True)
 
-        st.markdown("### 📍 INCURSION GPS MAP")
+        st.markdown("### 📍 INCURSION GPS MAP & SATELLITE RECON")
         map_data = pd.DataFrame({'lat': [28.5355], 'lon': [77.3910]})
         st.map(map_data, zoom=10)
 
@@ -342,7 +344,6 @@ else:
         st.markdown("---")
         st.markdown("### 📋 PERSISTENT AUDIT TRAIL")
         
-        # Pull live audit logs from SQLite Database
         db_logs = fetch_logs()
         for timestamp, operator, event, level in db_logs:
             color = "#00ffcc" if level == "INFO" else "#ff0055"
