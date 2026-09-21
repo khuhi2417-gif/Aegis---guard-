@@ -360,8 +360,8 @@ else:
                     st.components.v1.html('<audio autoplay><source src="https://www.soundjay.com/buttons/beep-07a.mp3" type="audio/mpeg"></audio>', height=0)
             cap.release()
         else:
-            # Dedicated Thermal Detection Optics Picture
-            st.image("https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=1000&q=80", caption="🔥 THERMAL DETECTION SCOPE — INFRARED HEAT SIGNATURES ACTIVE", use_container_width=True)
+            # Standby Thermal Optical Feed Image
+            st.image("https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80", caption="STANDBY THERMAL SCOPE FEED - UNMANNED DRONE RECON", use_container_width=True)
 
         st.markdown("### 📍 INCURSION GPS & SATELLITE RECON")
         map_data = pd.DataFrame({'lat': [28.5355], 'lon': [77.3910]})
@@ -387,6 +387,11 @@ else:
             if st.button("📡 DISPATCH AUTOMATED MESH DRONE"):
                 save_log(st.session_state['user'], "Dispatched Recon Drone Mesh", "INFO")
                 st.info("Autonomous Drone Mesh Deployed.")
+
+        st.markdown("---")
+        st.markdown("### 🎯 THERMAL RECON VISION")
+        # Added Night Operations Tactical Vision Visual
+        st.image("https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80", caption="INFRARED & THERMAL TACTICAL RECON", use_container_width=True)
 
         st.markdown("---")
         st.markdown("### 📋 IMMUTABLE AUDIT LOG")
