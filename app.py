@@ -360,7 +360,8 @@ else:
                     st.components.v1.html('<audio autoplay><source src="https://www.soundjay.com/buttons/beep-07a.mp3" type="audio/mpeg"></audio>', height=0)
             cap.release()
         else:
-            st.image("https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80", caption="STANDBY THERMAL SCOPE FEED - UNMANNED DRONE RECON", use_container_width=True)
+            # Dedicated Thermal Detection Optics Picture
+            st.image("https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=1000&q=80", caption="🔥 THERMAL DETECTION SCOPE — INFRARED HEAT SIGNATURES ACTIVE", use_container_width=True)
 
         st.markdown("### 📍 INCURSION GPS & SATELLITE RECON")
         map_data = pd.DataFrame({'lat': [28.5355], 'lon': [77.3910]})
