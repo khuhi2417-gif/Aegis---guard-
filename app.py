@@ -85,75 +85,81 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 3. CLEAN SCI-FI HUD CSS OVERHAUL (NO SCANLINES / NO GRID OVERLAYS) ---
+# --- 3. HIGH-CONTRAST VIBRANT CYBER-HUD CSS ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap');
 
-    /* Clean Solid Dark Background */
+    /* Clean Solid Deep Space Dark Background */
     .stApp {
-        background-color: #02060d;
-        color: #00ffcc;
-        font-family: 'Share Tech Mono', monospace;
+        background-color: #030813;
+        color: #e0f7fc;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1.05rem;
     }
 
-    /* Sci-Fi Glowing Headings */
+    /* Vibrant Sci-Fi Neon Glow Headings */
     h1, h2, h3, h4 {
         font-family: 'Orbitron', sans-serif !important;
         letter-spacing: 2px;
-        color: #00ffcc !important;
-        text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        color: #00f0ff !important;
+        text-shadow: 0 0 12px rgba(0, 240, 255, 0.6), 0 0 25px rgba(0, 240, 255, 0.2);
     }
 
-    /* Holographic Glassmorphism Cards */
+    /* Subtitles and Labels in Golden Amber Glow */
+    .stCaption, label, div[data-testid="stMarkdownContainer"] p {
+        color: #00f0ff;
+    }
+
+    /* Futuristic Cyber Glow Cards */
     .holo-card {
-        background: rgba(4, 18, 28, 0.85);
-        border: 1px solid rgba(0, 255, 204, 0.4);
+        background: rgba(6, 24, 44, 0.9);
+        border: 1px solid #00f0ff;
         border-radius: 8px;
         padding: 16px;
         text-align: center;
-        box-shadow: 0 0 15px rgba(0, 255, 204, 0.15);
+        box-shadow: 0 0 18px rgba(0, 240, 255, 0.25);
         transition: all 0.3s ease;
     }
     .holo-card:hover {
-        border-color: #00ffcc;
-        box-shadow: 0 0 25px rgba(0, 255, 204, 0.5);
+        border-color: #ffffff;
+        box-shadow: 0 0 28px rgba(0, 240, 255, 0.6);
         transform: translateY(-2px);
     }
 
     .holo-card-alert {
-        background: rgba(45, 4, 18, 0.85);
-        border: 1px solid rgba(255, 0, 85, 0.8);
+        background: rgba(50, 6, 20, 0.9);
+        border: 1px solid #ff0055;
         border-radius: 8px;
         padding: 16px;
         text-align: center;
-        box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
+        box-shadow: 0 0 22px rgba(255, 0, 85, 0.4);
         animation: pulse-border 1.5s infinite alternate;
     }
     @keyframes pulse-border {
-        0% { box-shadow: 0 0 10px rgba(255, 0, 85, 0.3); border-color: rgba(255,0,85,0.5); }
-        100% { box-shadow: 0 0 25px rgba(255, 0, 85, 0.9); border-color: rgba(255,0,85,1); }
+        0% { box-shadow: 0 0 12px rgba(255, 0, 85, 0.3); border-color: rgba(255,0,85,0.6); }
+        100% { box-shadow: 0 0 30px rgba(255, 0, 85, 1); border-color: #ff0055; }
     }
 
-    /* Interactive Action Buttons */
+    /* High-Impact Interactive Buttons */
     div.stButton > button {
         width: 100%;
-        background: linear-gradient(135deg, rgba(0, 255, 204, 0.15), rgba(0, 0, 0, 0.9)) !important;
-        border: 1px solid #00ffcc !important;
-        color: #00ffcc !important;
+        background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 0, 0, 0.95)) !important;
+        border: 1.5px solid #00f0ff !important;
+        color: #ffffff !important;
         font-family: 'Orbitron', sans-serif !important;
-        font-size: 0.85rem !important;
-        letter-spacing: 1px;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 1.5px;
         border-radius: 6px !important;
-        padding: 10px 16px !important;
-        box-shadow: 0 0 12px rgba(0, 255, 204, 0.2);
+        padding: 12px 18px !important;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
         transition: all 0.3s ease !important;
     }
     div.stButton > button:hover {
-        background: #00ffcc !important;
-        color: #02060d !important;
-        font-weight: 700 !important;
-        box-shadow: 0 0 25px rgba(0, 255, 204, 0.8) !important;
+        background: #00f0ff !important;
+        color: #030813 !important;
+        box-shadow: 0 0 30px rgba(0, 240, 255, 1) !important;
     }
 
     /* Animated Tactical Radar */
@@ -161,17 +167,18 @@ st.markdown("""
         width: 100px;
         height: 100px;
         border-radius: 50%;
-        border: 2px solid #00ffcc;
-        background: radial-gradient(circle, rgba(0,255,204,0.2) 0%, rgba(0,0,0,0.95) 75%);
+        border: 2px solid #00f0ff;
+        background: radial-gradient(circle, rgba(0,240,255,0.25) 0%, rgba(3,8,19,0.95) 75%);
         position: relative;
         margin: 0 auto;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
     }
     .radar::after {
         content: "";
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
         border-radius: 50%;
-        background: conic-gradient(from 0deg, transparent 270deg, rgba(0,255,204,0.8) 360deg);
+        background: conic-gradient(from 0deg, transparent 270deg, rgba(0,240,255,0.9) 360deg);
         animation: radar-sweep 2s linear infinite;
     }
     @keyframes radar-sweep {
@@ -190,8 +197,8 @@ st.markdown("""
     }
     .bar {
         width: 4px;
-        background: #00ffcc;
-        box-shadow: 0 0 8px #00ffcc;
+        background: #00f0ff;
+        box-shadow: 0 0 8px #00f0ff;
         animation: sound-wave 0.8s infinite ease-in-out alternate;
     }
     .bar:nth-child(1) { animation-delay: 0.1s; }
@@ -211,7 +218,6 @@ if "logged_in" not in st.session_state:
 
 # --- 4. SECURE AUTHENTICATION PORTAL ---
 if not st.session_state["logged_in"]:
-    # Image 1: Main High-Tech Tactical Surveillance Banner
     st.image("https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80", use_container_width=True)
     
     st.title("🛡️ AEGIS-GUARD | COMMAND ACCESS")
@@ -257,8 +263,8 @@ if not st.session_state["logged_in"]:
 else:
     # Sidebar HUD Node
     st.sidebar.markdown("### 🎛️ COMMAND NODE")
-    st.sidebar.markdown(f"**OPERATOR:** `{st.session_state['user']}`")
-    st.sidebar.markdown(f"**ROLE:** `{st.session_state['role']}`")
+    st.sidebar.markdown(f"**OPERATOR:** `<span style='color:#00f0ff;'>{st.session_state['user']}</span>`", unsafe_allow_html=True)
+    st.sidebar.markdown(f"**ROLE:** `<span style='color:#ffaa00;'>{st.session_state['role']}</span>`", unsafe_allow_html=True)
     
     if st.sidebar.button("TERMINATE SESSION"):
         save_log(st.session_state["user"], "Operator Terminated Session", "INFO")
@@ -267,19 +273,18 @@ else:
 
     st.sidebar.markdown("---")
     st.sidebar.markdown('<div class="radar"></div>', unsafe_allow_html=True)
-    st.sidebar.caption("<center style='color:#00ffcc; font-size:0.75rem; margin-top:8px;'>RADAR LOCK: ACTIVE</center>", unsafe_allow_html=True)
+    st.sidebar.caption("<center style='color:#00f0ff; font-weight:bold; font-size:0.8rem; margin-top:8px;'>RADAR LOCK: ACTIVE</center>", unsafe_allow_html=True)
     
     # Audio Visualizer Box
     st.sidebar.markdown("""
     <div class="sound-bar-container">
         <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
     </div>
-    <center style='color:#888; font-size:0.65rem; margin-top:4px;'>ACOUSTIC SENSORS: ONLINE</center>
+    <center style='color:#00f0ff; font-size:0.7rem; margin-top:4px;'>ACOUSTIC SENSORS: ONLINE</center>
     """, unsafe_allow_html=True)
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 🪖 SOLDIER TELEMETRY")
-    # Image 2: High-Tech Soldier Tactical Gear Visual
     st.sidebar.image("https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=400&q=80", caption="PATROL ALPHA (BIO-SYNC 100%)", use_container_width=True)
 
     sector = st.sidebar.selectbox("FORWARD SECTOR", ["Sector 4-B (High Threat)", "Sector 1-A (Clear Outpost)", "Border Gate West"])
@@ -288,29 +293,29 @@ else:
 
     # Top Narrative Glowing Banner
     st.markdown("""
-    <div style="background: rgba(255,0,85,0.15); border: 1px solid #ff0055; padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div style="background: rgba(255,0,85,0.18); border: 1.5px solid #ff0055; padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 20px rgba(255,0,85,0.3);">
         <div>
-            <strong style="color: #ff0055; font-size: 1.15rem; letter-spacing:1px;">⚠️ FORWARD SOLDIER PROTECTION SYSTEM</strong><br>
-            <span style="font-size: 0.85rem; color: #00ffcc;">Sub-2ms local AI edge processing prevents ambushes during total communication blackout.</span>
+            <strong style="color: #ff0055; font-size: 1.2rem; letter-spacing:1px;">⚠️ FORWARD SOLDIER PROTECTION SYSTEM</strong><br>
+            <span style="font-size: 0.95rem; color: #00f0ff; font-weight:600;">Sub-2ms local AI edge processing prevents ambushes during total communication blackout.</span>
         </div>
-        <span style="background: #ff0055; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; letter-spacing: 1px;">SOLDIER SHIELD ACTIVE</span>
+        <span style="background: #ff0055; color: white; padding: 6px 14px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; letter-spacing: 1px; box-shadow: 0 0 10px #ff0055;">SOLDIER SHIELD ACTIVE</span>
     </div>
     """, unsafe_allow_html=True)
 
     # 4 Glowing Telemetry Metrics
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        st.markdown('<div class="holo-card"><div style="font-size:0.7rem; color:#888;">TARGET DISTANCE</div><div style="font-size:1.6rem; font-weight:800; color:#00ffcc;">142.4 M</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="holo-card"><div style="font-size:0.75rem; color:#00f0ff; font-weight:bold;">TARGET DISTANCE</div><div style="font-size:1.7rem; font-weight:900; color:#ffffff;">142.4 M</div></div>', unsafe_allow_html=True)
     with m2:
-        st.markdown('<div class="holo-card"><div style="font-size:0.7rem; color:#888;">SOLDIER PULSE</div><div style="font-size:1.6rem; font-weight:800; color:#00ffcc;">78 BPM</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="holo-card"><div style="font-size:0.75rem; color:#00f0ff; font-weight:bold;">SOLDIER PULSE</div><div style="font-size:1.7rem; font-weight:900; color:#00ffcc;">78 BPM</div></div>', unsafe_allow_html=True)
     with m3:
-        st.markdown('<div class="holo-card"><div style="font-size:0.7rem; color:#888;">EDGE LATENCY</div><div style="font-size:1.6rem; font-weight:800; color:#00ffcc;">1.2 ms</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="holo-card"><div style="font-size:0.75rem; color:#00f0ff; font-weight:bold;">EDGE LATENCY</div><div style="font-size:1.7rem; font-weight:900; color:#ffaa00;">1.2 ms</div></div>', unsafe_allow_html=True)
     with m4:
         is_threat = "Sector 4-B" in sector
         card_class = "holo-card-alert" if is_threat else "holo-card"
         threat_text = "LEVEL 4 BREACH" if is_threat else "SECURE"
         text_color = "#ff0055" if is_threat else "#00ffcc"
-        st.markdown(f'<div class="{card_class}"><div style="font-size:0.7rem; color:{text_color};">THREAT LEVEL</div><div style="font-size:1.6rem; font-weight:800; color:{text_color};">{threat_text}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="{card_class}"><div style="font-size:0.75rem; color:{text_color}; font-weight:bold;">THREAT LEVEL</div><div style="font-size:1.7rem; font-weight:900; color:{text_color};">{threat_text}</div></div>', unsafe_allow_html=True)
 
     st.write("")
     col1, col2 = st.columns([2, 1])
@@ -355,15 +360,11 @@ else:
                     st.components.v1.html('<audio autoplay><source src="https://www.soundjay.com/buttons/beep-07a.mp3" type="audio/mpeg"></audio>', height=0)
             cap.release()
         else:
-            # Image 3: Thermal Unmanned Drone Scope Image when camera is toggled OFF
             st.image("https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80", caption="STANDBY THERMAL SCOPE FEED - UNMANNED DRONE RECON", use_container_width=True)
 
         st.markdown("### 📍 INCURSION GPS & SATELLITE RECON")
         map_data = pd.DataFrame({'lat': [28.5355], 'lon': [77.3910]})
         st.map(map_data, zoom=10)
-
-        # Image 4: Satellite Operations Array Visual
-        st.image("https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=1200&q=80", caption="ORBITAL SATELLITE RADAR ARRAY - REAL-TIME TELEMETRY", use_container_width=True)
 
     with col2:
         st.markdown("### 🚨 THREAT ANALYSIS")
@@ -386,19 +387,14 @@ else:
                 save_log(st.session_state['user'], "Dispatched Recon Drone Mesh", "INFO")
                 st.info("Autonomous Drone Mesh Deployed.")
 
-        # Image 5: Base Mission Tactical Night Visual
-        st.markdown("---")
-        st.markdown("### 🛰️ BASE MAP RECON")
-        st.image("https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80", caption="TACTICAL NIGHT MISSION RECON", use_container_width=True)
-
         st.markdown("---")
         st.markdown("### 📋 IMMUTABLE AUDIT LOG")
         
         db_logs = fetch_logs()
         for timestamp, operator, event, level in db_logs:
-            color = "#00ffcc" if level == "INFO" else "#ff0055"
+            color = "#00f0ff" if level == "INFO" else "#ff0055"
             st.markdown(f"""
-            <div style="background: rgba(4, 15, 24, 0.95); border-left: 3px solid {color}; padding: 6px 10px; font-size: 0.8rem; color: {color}; margin-bottom: 4px; border-radius: 0 4px 4px 0;">
-                <span style="opacity: 0.6;">[{timestamp}]</span> <strong>[{operator}]</strong> {event}
+            <div style="background: rgba(6, 24, 44, 0.95); border-left: 4px solid {color}; padding: 8px 12px; font-size: 0.85rem; color: #ffffff; margin-bottom: 6px; border-radius: 0 6px 6px 0; box-shadow: 0 0 10px rgba(0,240,255,0.1);">
+                <span style="color: #00f0ff; font-weight:bold;">[{timestamp}]</span> <strong style="color: #ffaa00;">[{operator}]</strong> {event}
             </div>
             """, unsafe_allow_html=True)
