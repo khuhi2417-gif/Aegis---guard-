@@ -63,6 +63,7 @@ else:
     
     sector = st.sidebar.selectbox("Active Defense Sector", ["Sector 4-B (High Threat)", "Sector 1-A (Clear Outpost)", "Border Gate West"])
     sensor_mode = st.sidebar.radio("CV Filter Spectrum", ["Real-Time Thermal", "Infrared Night Vision", "Standard Motion Bounding"])
+    enable_audio = st.sidebar.checkbox("🔊 Enable Thermal Detection Audio Alerts", value=True)
 
     # Header
     st.title("🛡️ AEGIS-GUARD Tactical Surveillance Console")
@@ -91,26 +92,41 @@ else:
                 frame = cv2.resize(frame, (640, 360))
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 
+                box_color = (0, 255, 0)
+                status_text = "TARGET LOCK: ACTIVE CV TRACKING"
+
                 # Thermal / Night Vision Color Mapping
                 if sensor_mode == "Real-Time Thermal":
                     frame = cv2.applyColorMap(gray, cv2.COLORMAP_JET)
                     cv2.putText(frame, "THERMAL SPECTRUM ACTIVE", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+                    box_color = (0, 255, 255) # Bright Yellow for Thermal
+                    status_text = "THERMAL TARGET LOCK: HEAT SIGNATURE DETECTED"
                 elif sensor_mode == "Infrared Night Vision":
                     frame = cv2.applyColorMap(gray, cv2.COLORMAP_SUMMER)
                     cv2.putText(frame, "INFRARED NIGHT VISION ACTIVE", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                    box_color = (0, 255, 0) # Green for IR
+                    status_text = "INFRARED LOCK: MOTION DETECTED"
 
-                # Pure Python/NumPy Motion & Center Target Box (No Cascade Dependency)
+                # Draw Target Box
                 h, w, _ = frame.shape
-                cv2.rectangle(frame, (w//4, h//4), (3*w//4, 3*h//4), (0, 255, 0), 2)
-                cv2.putText(frame, "TARGET LOCK: ACTIVE CV TRACKING", (w//4, h//4 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                x1, y1, x2, y2 = w//4, h//4, 3*w//4, 3*h//4
+                cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
+                cv2.putText(frame, status_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, box_color, 2)
 
                 frame_window.image(frame, channels="BGR", use_container_width=True)
+
+                # Trigger Automatic Audio Sound when Thermal Mode is active
+                if sensor_mode == "Real-Time Thermal" and enable_audio:
+                    st.components.v1.html(
+                        '<audio autoplay><source src="https://www.soundjay.com/buttons/beep-07a.mp3" type="audio/mpeg"></audio>',
+                        height=0
+                    )
             cap.release()
         else:
             st.info("Camera inactive. Enable the checkbox above to process live feeds.")
 
         st.markdown("---")
-        st.subheader("🗺️ GPS Incursion Satellite Map")
+        st.subheader("MAP: GPS Incursion Satellite Coordinates")
         map_data = pd.DataFrame({'lat': [28.5355], 'lon': [77.3910]})
         st.map(map_data, zoom=11)
 
