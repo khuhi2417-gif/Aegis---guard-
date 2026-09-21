@@ -85,12 +85,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 3. CLEAN SCI-FI HUD CSS OVERHAUL (NO SCANLINES / NO GRID LINES) ---
+# --- 3. CLEAN SCI-FI HUD CSS OVERHAUL (NO SCANLINES / NO GRID OVERLAYS) ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap');
 
-    /* Clean Solid Dark Background (Removed CRT Scanlines and Grid Overlay) */
+    /* Clean Solid Dark Background */
     .stApp {
         background-color: #02060d;
         color: #00ffcc;
@@ -211,6 +211,7 @@ if "logged_in" not in st.session_state:
 
 # --- 4. SECURE AUTHENTICATION PORTAL ---
 if not st.session_state["logged_in"]:
+    # Image 1: Main High-Tech Tactical Surveillance Banner
     st.image("https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80", use_container_width=True)
     
     st.title("🛡️ AEGIS-GUARD | COMMAND ACCESS")
@@ -278,6 +279,7 @@ else:
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 🪖 SOLDIER TELEMETRY")
+    # Image 2: High-Tech Soldier Tactical Gear Visual
     st.sidebar.image("https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=400&q=80", caption="PATROL ALPHA (BIO-SYNC 100%)", use_container_width=True)
 
     sector = st.sidebar.selectbox("FORWARD SECTOR", ["Sector 4-B (High Threat)", "Sector 1-A (Clear Outpost)", "Border Gate West"])
@@ -353,11 +355,15 @@ else:
                     st.components.v1.html('<audio autoplay><source src="https://www.soundjay.com/buttons/beep-07a.mp3" type="audio/mpeg"></audio>', height=0)
             cap.release()
         else:
-            st.image("https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80", caption="STANDBY THERMAL SCOPE FEED", use_container_width=True)
+            # Image 3: Thermal Unmanned Drone Scope Image when camera is toggled OFF
+            st.image("https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80", caption="STANDBY THERMAL SCOPE FEED - UNMANNED DRONE RECON", use_container_width=True)
 
         st.markdown("### 📍 INCURSION GPS & SATELLITE RECON")
         map_data = pd.DataFrame({'lat': [28.5355], 'lon': [77.3910]})
         st.map(map_data, zoom=10)
+
+        # Image 4: Satellite Operations Array Visual
+        st.image("https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=1200&q=80", caption="ORBITAL SATELLITE RADAR ARRAY - REAL-TIME TELEMETRY", use_container_width=True)
 
     with col2:
         st.markdown("### 🚨 THREAT ANALYSIS")
@@ -379,6 +385,11 @@ else:
             if st.button("📡 DISPATCH AUTOMATED MESH DRONE"):
                 save_log(st.session_state['user'], "Dispatched Recon Drone Mesh", "INFO")
                 st.info("Autonomous Drone Mesh Deployed.")
+
+        # Image 5: Base Mission Tactical Night Visual
+        st.markdown("---")
+        st.markdown("### 🛰️ BASE MAP RECON")
+        st.image("https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80", caption="TACTICAL NIGHT MISSION RECON", use_container_width=True)
 
         st.markdown("---")
         st.markdown("### 📋 IMMUTABLE AUDIT LOG")
