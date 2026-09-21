@@ -6,18 +6,31 @@ import time
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="AEGIS-GUARD | Tactical AI Command",
+    page_title="AEGIS-GUARD | AI Soldier Shield",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- ADVANCED CYBERPUNK / MILITARY HUD STYLES ---
+# --- ADVANCED HUD, ANIMATIONS & SOLDIER SAFETY STYLES ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Share+Tech+Mono&display=swap');
 
-    /* Global Dark Theme Background */
+    /* CRT Radar Scanline Overlay Effect */
+    .stApp::before {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0; left: 0; bottom: 0; right: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+        z-index: 999;
+        background-size: 100% 3px, 6px 100%;
+        pointer-events: none;
+    }
+
+    /* Global Cyberpunk Dark Theme Background */
     .stApp {
         background-color: #03070d;
         background-image: 
@@ -29,7 +42,7 @@ st.markdown("""
         font-family: 'Share Tech Mono', monospace;
     }
 
-    /* Headings styling */
+    /* Headings Styling */
     h1, h2, h3, h4, .stTitle {
         font-family: 'Orbitron', sans-serif !important;
         text-transform: uppercase;
@@ -38,12 +51,28 @@ st.markdown("""
         text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
     }
 
+    /* Pulsing Threat Alert Header */
+    .soldier-safety-banner {
+        background: linear-gradient(90deg, rgba(255,0,85,0.2), rgba(0,255,204,0.1), rgba(255,0,85,0.2));
+        border: 1px solid #ff0055;
+        border-radius: 6px;
+        padding: 12px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
+        animation: pulse-border 2s infinite alternate;
+    }
+
+    @keyframes pulse-border {
+        0% { box-shadow: 0 0 10px rgba(255, 0, 85, 0.3); }
+        100% { box-shadow: 0 0 25px rgba(255, 0, 85, 0.8); }
+    }
+
     /* Glassmorphism Metric Cards */
     .hud-card {
         background: rgba(6, 18, 26, 0.7);
         backdrop-filter: blur(8px);
         border: 1px solid rgba(0, 255, 204, 0.3);
-        box-shadow: 0 0 15px rgba(0, 255, 204, 0.15), inset 0 0 15px rgba(0, 255, 204, 0.05);
+        box-shadow: 0 0 15px rgba(0, 255, 204, 0.15);
         border-radius: 8px;
         padding: 15px;
         text-align: center;
@@ -59,12 +88,8 @@ st.markdown("""
         border: 1px solid rgba(255, 0, 85, 0.5);
         box-shadow: 0 0 15px rgba(255, 0, 85, 0.2);
     }
-    .hud-card-critical:hover {
-        border-color: #ff0055;
-        box-shadow: 0 0 25px rgba(255, 0, 85, 0.5);
-    }
 
-    /* Glowing Tactical Action Buttons */
+    /* Glowing Action Buttons */
     div.stButton > button {
         width: 100%;
         background: linear-gradient(135deg, rgba(0, 255, 204, 0.1), rgba(0, 0, 0, 0.8)) !important;
@@ -83,12 +108,6 @@ st.markdown("""
         color: #03070d !important;
         font-weight: 900 !important;
         box-shadow: 0 0 25px rgba(0, 255, 204, 0.8) !important;
-    }
-
-    /* Sidebar Custom Styling */
-    section[data-testid="stSidebar"] {
-        background-color: #020408 !important;
-        border-right: 1px solid rgba(0, 255, 204, 0.2);
     }
 
     /* Radar Animation */
@@ -121,17 +140,6 @@ st.markdown("""
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
     }
-
-    /* Live Telemetry Marquee Bar */
-    .ticker-wrap {
-        width: 100%;
-        background: rgba(0, 255, 204, 0.05);
-        border-top: 1px solid rgba(0, 255, 204, 0.3);
-        border-bottom: 1px solid rgba(0, 255, 204, 0.3);
-        padding: 6px 0;
-        margin-bottom: 20px;
-        overflow: hidden;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -163,24 +171,24 @@ if "logs" not in st.session_state:
 
 # --- 1. LOGIN PORTAL ---
 if not st.session_state["logged_in"]:
-    st.title("🛡️ AEGIS-GUARD TACTICAL OS")
-    st.caption("AIR-GAPPED AI BORDER DEFENSE MATRIX v4.2")
+    st.title("🛡️ AEGIS-GUARD: MISSION NIGHTFALL")
+    st.caption("AIR-GAPPED AI DEFENSE MATRIX FOR SOLDIER SURVIVABILITY")
     st.markdown("---")
     
     col_a, col_b, col_c = st.columns([1, 2, 1])
     with col_b:
         st.markdown("""
         <div class="hud-card" style="text-align: left; margin-bottom: 20px;">
-            <h3 style="margin-top:0;">🔐 OPERATOR AUTHENTICATION</h3>
-            <p style="font-size:0.8rem; color:#888;">ENTER TACTICAL CREDENTIALS TO INITIALIZE AIR-GAPPED MESH NODE.</p>
+            <h3 style="margin-top:0;">🔑 OPERATOR AUTHENTICATION</h3>
+            <p style="font-size:0.8rem; color:#888;">INITIALIZING ZERO-TRUST MESH NODE TO PROTECT FORWARD OPERATING UNITS.</p>
         </div>
         """, unsafe_allow_html=True)
         
-        user = st.text_input("CALL SIGN", value="COMMAND-01")
+        user = st.text_input("CALL SIGN", value="ALPHA-LEADER")
         pin = st.text_input("ACCESS PIN", type="password", value="1234")
         role = st.selectbox("ASSIGNED ROLE", ["Base Command Officer", "Field Patrol Operator", "System Administrator"])
         
-        if st.button("INITIALIZE SYSTEM ACCESS"):
+        if st.button("INITIALIZE MISSION CONSOLE"):
             if user and pin:
                 st.session_state["logged_in"] = True
                 st.session_state["user"] = user
@@ -189,22 +197,21 @@ if not st.session_state["logged_in"]:
 
 # --- 2. MAIN TACTICAL COMMAND CONSOLE ---
 else:
-    # Top Live Telemetry Scrolling Ticker
+    # Live Mission Ticker Tape
     st.markdown("""
-    <div class="ticker-wrap">
+    <div style="background: rgba(0, 255, 204, 0.05); border-top: 1px solid rgba(0,255,204,0.3); border-bottom: 1px solid rgba(0,255,204,0.3); padding: 5px 0; margin-bottom: 15px;">
         <marquee scrollamount="6" style="font-family: 'Share Tech Mono', monospace; color: #00ffcc; font-size: 0.85rem;">
-            ● AIR-GAPPED MESH NODE #01 ACTIVE &nbsp;&nbsp;&nbsp;
-            ● ENCRYPTION: AES-256-GCM &nbsp;&nbsp;&nbsp;
-            ● SATELLITE SYNC: 100% &nbsp;&nbsp;&nbsp;
-            ● LOCAL EDGE LATENCY: 1.2ms &nbsp;&nbsp;&nbsp;
-            ● AI CV MODEL: YOLOV8-TACTICAL ENHANCED &nbsp;&nbsp;&nbsp;
-            ● PERIMETER STATUS: HIGH ALERT
+            ● MISSION STATUS: ACTIVE BREACH PREVENTION &nbsp;&nbsp;&nbsp;
+            ● AIR-GAPPED MESH NODE #01 ONLINE &nbsp;&nbsp;&nbsp;
+            ● SOLDIER TELEMETRY SYNCED &nbsp;&nbsp;&nbsp;
+            ● EDGE LATENCY: 1.2ms &nbsp;&nbsp;&nbsp;
+            ● AI DETECTION: MULTI-SPECTRAL THERMAL
         </marquee>
     </div>
     """, unsafe_allow_html=True)
 
-    # Sidebar Controls
-    st.sidebar.markdown("### 🎛️ SYSTEM CONTROL")
+    # Sidebar
+    st.sidebar.markdown("### 🎛️ COMMAND NODE")
     st.sidebar.markdown(f"**OPERATOR:** `{st.session_state['user']}`")
     st.sidebar.markdown(f"**ROLE:** `{st.session_state['role']}`")
     
@@ -214,33 +221,33 @@ else:
 
     st.sidebar.markdown("---")
     
-    # Animated Radar HUD
+    # Radar Sweep Animation
     st.sidebar.markdown("""
     <div class="radar-container">
         <div class="radar"></div>
         <div style="font-size: 0.7rem; color: #00ffcc; letter-spacing: 2px; margin-top: 8px; font-weight: bold;">
-            RADAR SWEEP: ACTIVE
+            PERIMETER SWEEP: ACTIVE
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 📡 SECTOR SELECTION")
-    sector = st.sidebar.selectbox("DEFENSE SECTOR", ["Sector 4-B (High Threat)", "Sector 1-A (Clear Outpost)", "Border Gate West"])
+    sector = st.sidebar.selectbox("FORWARD SECTOR", ["Sector 4-B (High Threat)", "Sector 1-A (Clear Outpost)", "Border Gate West"])
     sensor_mode = st.sidebar.radio("CV SPECTRUM FILTER", ["Real-Time Thermal", "Infrared Night Vision", "Standard Motion Bounding"])
     enable_audio = st.sidebar.checkbox("🔊 Audio Detection Alerts", value=True)
 
-    # Main HUD Header
+    # Top Narrative Banner for AI Got Talent Storytelling
     st.markdown("""
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,255,204,0.3); padding-bottom: 10px; margin-bottom: 20px;">
-        <div>
-            <h2 style="margin: 0;">🛡️ AEGIS-GUARD TACTICAL CONSOLE</h2>
-            <div style="font-size: 0.8rem; color: #888;">AIR-GAPPED THREAT DETECTION & EDGE PROCESSING</div>
-        </div>
-        <div style="text-align: right;">
-            <span style="background: rgba(0,255,204,0.15); color: #00ffcc; border: 1px solid #00ffcc; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem;">
-                ● LIVE DEFENSE MATRIX
-            </span>
+    <div class="soldier-safety-banner">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <strong style="color:#ff0055; font-size:1rem; letter-spacing:1px;">⚠️ STORY SCENARIO: FORWARD PATROL IN BLACKOUT</strong>
+                <div style="color:#00ffcc; font-size:0.85rem; margin-top:4px;">
+                    Zero internet. Total radio silence. AEGIS-GUARD processes computer vision at the local edge to alert soldiers <strong>before</strong> an ambush occurs.
+                </div>
+            </div>
+            <span style="background:#ff0055; color:#ffffff; font-weight:bold; padding:4px 10px; border-radius:4px; font-size:0.75rem;">SOLDIER SHIELD ACTIVE</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -250,22 +257,22 @@ else:
     with m1:
         st.markdown("""
         <div class="hud-card">
-            <div style="font-size: 0.7rem; color: #888; letter-spacing: 1px;">TARGET DISTANCE</div>
+            <div style="font-size: 0.7rem; color: #888;">TARGET DISTANCE</div>
             <div style="font-size: 1.6rem; font-family: 'Orbitron'; font-weight: 800; color: #00ffcc;">142.4 M</div>
         </div>
         """, unsafe_allow_html=True)
     with m2:
         st.markdown("""
         <div class="hud-card">
-            <div style="font-size: 0.7rem; color: #888; letter-spacing: 1px;">AI CONFIDENCE</div>
-            <div style="font-size: 1.6rem; font-family: 'Orbitron'; font-weight: 800; color: #00ffcc;">96.2%</div>
+            <div style="font-size: 0.7rem; color: #888;">SOLDIER PULSE (BPM)</div>
+            <div style="font-size: 1.6rem; font-family: 'Orbitron'; font-weight: 800; color: #00ffcc;">78 BPM</div>
         </div>
         """, unsafe_allow_html=True)
     with m3:
         st.markdown("""
         <div class="hud-card">
-            <div style="font-size: 0.7rem; color: #888; letter-spacing: 1px;">FRAME RATE</div>
-            <div style="font-size: 1.6rem; font-family: 'Orbitron'; font-weight: 800; color: #00ffcc;">60 FPS</div>
+            <div style="font-size: 0.7rem; color: #888;">EDGE RESPONSE TIME</div>
+            <div style="font-size: 1.6rem; font-family: 'Orbitron'; font-weight: 800; color: #00ffcc;">1.2 ms</div>
         </div>
         """, unsafe_allow_html=True)
     with m4:
@@ -275,7 +282,7 @@ else:
         text_color = "#ff0055" if is_threat else "#00ffcc"
         st.markdown(f"""
         <div class="{card_class}">
-            <div style="font-size: 0.7rem; color: {text_color}; letter-spacing: 1px;">THREAT LEVEL</div>
+            <div style="font-size: 0.7rem; color: {text_color};">THREAT LEVEL</div>
             <div style="font-size: 1.6rem; font-family: 'Orbitron'; font-weight: 800; color: {text_color};">{threat_text}</div>
         </div>
         """, unsafe_allow_html=True)
@@ -285,8 +292,8 @@ else:
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        st.markdown("### 📹 LIVE VIDEO FEED & SCOPE OVERLAY")
-        use_camera = st.checkbox("ACTIVATE CAMERA FEED", value=True)
+        st.markdown("### 📹 AUTONOMOUS SCOPE & VISION MATRIX")
+        use_camera = st.checkbox("ACTIVATE AI OPTICAL STREAM", value=True)
         frame_window = st.image([])
 
         if use_camera:
@@ -296,12 +303,12 @@ else:
                 frame = cv2.resize(frame, (640, 360))
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 box_color = (0, 255, 0)
-                status_text = "CV TARGET LOCK: ACTIVE"
+                status_text = "AI THREAT LOCK: MONITORING"
 
                 if sensor_mode == "Real-Time Thermal":
                     frame = cv2.applyColorMap(gray, cv2.COLORMAP_JET)
                     box_color = (0, 255, 255)
-                    status_text = "THERMAL HEAT SIGNATURE LOCK"
+                    status_text = "THERMAL HEAT TRACKING: LOCK"
                 elif sensor_mode == "Infrared Night Vision":
                     frame = cv2.applyColorMap(gray, cv2.COLORMAP_SUMMER)
                     box_color = (0, 255, 0)
@@ -310,7 +317,7 @@ else:
                 h, w, _ = frame.shape
                 cx, cy = w // 2, h // 2
 
-                # HUD Crosshairs & Markers
+                # Tactical HUD Overlay
                 cv2.rectangle(frame, (w//4, h//4), (3*w//4, 3*h//4), box_color, 2)
                 cv2.putText(frame, status_text, (w//4, h//4 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, box_color, 2)
                 cv2.circle(frame, (cx, cy), 35, box_color, 1)
@@ -326,48 +333,48 @@ else:
                     )
             cap.release()
         else:
-            st.info("CAM SYSTEM STANDBY. CHECK BOX TO START STREAM.")
+            st.info("CAM SYSTEM STANDBY. ACTIVATE BOX TO START STREAM.")
 
-        st.markdown("### 📍 GPS INCURSION MAP")
+        st.markdown("### 📍 INCURSION GPS MAPPING")
         map_data = pd.DataFrame({'lat': [28.5355], 'lon': [77.3910]})
         st.map(map_data, zoom=10)
 
     with col2:
-        st.markdown("### 🚨 SECTOR INCURSION ALERT")
+        st.markdown("### 🚨 REAL-TIME THREAT ALERT")
         if "Sector 4-B" in sector:
-            st.error("⚠️ CRITICAL ALERT: Perimeter Breach Detected at Coordinates 28.5355° N, 77.3910° E")
+            st.error("⚠️ PERIMETER INCURSION DETECTED! EARLY WARNING DISPATCHED TO FIELD UNIT.")
         else:
             st.success("✅ SECTOR PERIMETER CLEAR")
 
         st.markdown("---")
-        st.markdown("### ⚡ TACTICAL PROTOCOLS")
+        st.markdown("### ⚡ SOLDIER PROTECTION PROTOCOLS")
         
         if st.session_state["role"] in ["Base Command Officer", "System Administrator"]:
-            if st.button("🚨 TRIGGER SILENT ALARM"):
+            if st.button("🚨 TRIGGER SILENT ALERT TO SOLDIERS"):
                 timestamp = time.strftime("%H:%M:%S")
-                log_msg = f"Silent Alarm Initiated by {st.session_state['user']}"
+                log_msg = f"Haptic Threat Alert Sent to Patrol Team by {st.session_state['user']}"
                 st.session_state["logs"].append(log_msg)
-                st.error("🚨 SIREN ACTIVATED AT BASE COMMAND!")
+                st.error("🚨 HAPTIC VIBRATION ALERT SENT TO FIELD VESTS!")
                 st.components.v1.html(
                     '<audio autoplay><source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mpeg"></audio>',
                     height=0
                 )
 
             st.write("")
-            if st.button("📡 BROADCAST MESH SIGNAL"):
+            if st.button("📡 DISPATCH AUTOMATED MESH SUPPORT"):
                 timestamp = time.strftime("%H:%M:%S")
-                log_msg = f"Mesh Radio Emergency Broadcast Sent"
+                log_msg = f"Air-Gapped Autonomous Drone Mesh Deployed"
                 st.session_state["logs"].append(log_msg)
-                st.info("Broadcast dispatched to all local mesh nodes.")
+                st.info("Drone Mesh Deployed for Reconnaissance.")
         else:
             st.info("🔒 ROLE RESTRICTED: Read-Only Access")
 
         st.markdown("---")
-        st.markdown("### 📋 AUDIT TERMINAL")
+        st.markdown("### 📋 IMMUTABLE AUDIT TRAIL")
         render_terminal_log("AIR-GAPPED MESH ROUTER ONLINE", "INFO")
         
         if st.session_state["logs"]:
             for log in reversed(st.session_state["logs"]):
-                render_terminal_log(log, "WARN" if "Alarm" in log else "INFO")
+                render_terminal_log(log, "WARN" if "Alert" in log else "INFO")
         else:
             st.caption("No breach events logged in this session.")
