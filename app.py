@@ -3,21 +3,98 @@ import cv2
 import numpy as np
 import pandas as pd
 import time
+import sqlite3
+import hashlib
 
-# --- PAGE CONFIGURATION ---
+# --- 1. SECURE DATABASE INITIALIZATION ---
+DB_NAME = "aegis_secure.db"
+
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    # Users table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL
+        )
+    ''')
+    # Audit logs table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT NOT NULL,
+            operator TEXT NOT NULL,
+            event TEXT NOT NULL,
+            level TEXT NOT NULL
+        )
+    ''')
+    
+    # Create default admin account if table is empty
+    c.execute('SELECT COUNT(*) FROM users')
+    if c.fetchone()[0] == 0:
+        default_hash = hashlib.sha256("1234".encode()).hexdigest()
+        c.execute('INSERT INTO users VALUES (?, ?, ?)', ("COMMAND-01", default_hash, "Base Command Officer"))
+    
+    conn.commit()
+    conn.close()
+
+def verify_user(username, password):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    pwd_hash = hashlib.sha256(password.encode()).hexdigest()
+    c.execute('SELECT role FROM users WHERE username = ? AND password_hash = ?', (username, pwd_hash))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result else None
+
+def register_user(username, password, role):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    pwd_hash = hashlib.sha256(password.encode()).hexdigest()
+    try:
+        c.execute('INSERT INTO users VALUES (?, ?, ?)', (username, pwd_hash, role))
+        conn.commit()
+        conn.close()
+        return True
+    except sqlite3.IntegrityError:
+        conn.close()
+        return False
+
+def save_log(operator, event, level="INFO"):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    ts = time.strftime("%Y-%m-%d %H:%M:%S")
+    c.execute('INSERT INTO logs (timestamp, operator, event, level) VALUES (?, ?, ?, ?)', (ts, operator, event, level))
+    conn.commit()
+    conn.close()
+
+def fetch_logs():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('SELECT timestamp, operator, event, level FROM logs ORDER BY id DESC LIMIT 15')
+    rows = c.fetchall()
+    conn.close()
+    return rows
+
+# Initialize Database
+init_db()
+
+# --- 2. PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="AEGIS-GUARD | AI Soldier Shield",
+    page_title="AEGIS-GUARD | Secure Tactical AI",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- ADVANCED HUD, ANIMATIONS & SOLDIER SAFETY STYLES ---
+# --- 3. ADVANCED STYLES & CRT HUD EFFECT ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Share+Tech+Mono&display=swap');
 
-    /* CRT Radar Scanline Overlay Effect */
+    /* CRT Radar Overlay */
     .stApp::before {
         content: " ";
         display: block;
@@ -30,7 +107,7 @@ st.markdown("""
         pointer-events: none;
     }
 
-    /* Global Cyberpunk Dark Theme Background */
+    /* Dark Theme Setup */
     .stApp {
         background-color: #03070d;
         background-image: 
@@ -42,46 +119,22 @@ st.markdown("""
         font-family: 'Share Tech Mono', monospace;
     }
 
-    /* Headings Styling */
-    h1, h2, h3, h4, .stTitle {
+    h1, h2, h3, h4 {
         font-family: 'Orbitron', sans-serif !important;
-        text-transform: uppercase;
         letter-spacing: 2px;
         color: #00ffcc !important;
         text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
     }
 
-    /* Pulsing Threat Alert Header */
-    .soldier-safety-banner {
-        background: linear-gradient(90deg, rgba(255,0,85,0.2), rgba(0,255,204,0.1), rgba(255,0,85,0.2));
-        border: 1px solid #ff0055;
-        border-radius: 6px;
-        padding: 12px 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
-        animation: pulse-border 2s infinite alternate;
-    }
-
-    @keyframes pulse-border {
-        0% { box-shadow: 0 0 10px rgba(255, 0, 85, 0.3); }
-        100% { box-shadow: 0 0 25px rgba(255, 0, 85, 0.8); }
-    }
-
-    /* Glassmorphism Metric Cards */
+    /* Glass Cards */
     .hud-card {
         background: rgba(6, 18, 26, 0.7);
         backdrop-filter: blur(8px);
         border: 1px solid rgba(0, 255, 204, 0.3);
-        box-shadow: 0 0 15px rgba(0, 255, 204, 0.15);
         border-radius: 8px;
         padding: 15px;
         text-align: center;
-        transition: all 0.3s ease;
-    }
-    .hud-card:hover {
-        border-color: #00ffcc;
-        box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
-        transform: translateY(-2px);
+        box-shadow: 0 0 15px rgba(0, 255, 204, 0.15);
     }
     .hud-card-critical {
         background: rgba(30, 5, 12, 0.7);
@@ -89,18 +142,15 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(255, 0, 85, 0.2);
     }
 
-    /* Glowing Action Buttons */
+    /* Tactical Buttons */
     div.stButton > button {
         width: 100%;
         background: linear-gradient(135deg, rgba(0, 255, 204, 0.1), rgba(0, 0, 0, 0.8)) !important;
         border: 1px solid #00ffcc !important;
         color: #00ffcc !important;
         font-family: 'Orbitron', sans-serif !important;
-        font-size: 0.85rem !important;
-        letter-spacing: 1.5px;
         border-radius: 4px !important;
         padding: 10px 16px !important;
-        box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
         transition: all 0.3s ease !important;
     }
     div.stButton > button:hover {
@@ -110,30 +160,22 @@ st.markdown("""
         box-shadow: 0 0 25px rgba(0, 255, 204, 0.8) !important;
     }
 
-    /* Radar Animation */
-    .radar-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        margin: 15px 0;
-    }
+    /* Radar animation */
     .radar {
-        width: 110px;
-        height: 110px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
         border: 1px solid #00ffcc;
-        background: radial-gradient(circle, rgba(0,255,204,0.15) 0%, rgba(0,0,0,0.9) 70%),
-                    repeating-radial-gradient(circle, transparent 0, transparent 18px, rgba(0,255,204,0.15) 19px);
+        background: radial-gradient(circle, rgba(0,255,204,0.15) 0%, rgba(0,0,0,0.9) 70%);
         position: relative;
-        box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+        margin: 0 auto;
     }
     .radar::after {
         content: "";
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
         border-radius: 50%;
-        background: conic-gradient(from 0deg, transparent 0deg, transparent 280deg, rgba(0,255,204,0.8) 360deg);
+        background: conic-gradient(from 0deg, transparent 280deg, rgba(0,255,204,0.8) 360deg);
         animation: radar-sweep 2.5s linear infinite;
     }
     @keyframes radar-sweep {
@@ -143,157 +185,101 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Helper Function for Tactical Log Entries
-def render_terminal_log(message, level="INFO"):
-    color = "#00ffcc" if level == "INFO" else "#ff0055"
-    st.markdown(f"""
-    <div style="
-        background: rgba(5, 15, 22, 0.9);
-        border-left: 3px solid {color};
-        padding: 8px 12px;
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 0.85rem;
-        color: {color};
-        margin-bottom: 6px;
-        border-radius: 0 4px 4px 0;
-        box-shadow: 0 0 8px rgba(0,0,0,0.5);
-    ">
-        <span style="opacity: 0.6;">[{time.strftime('%H:%M:%S')}]</span> 
-        <strong>[{level}]</strong> {message}
-    </div>
-    """, unsafe_allow_html=True)
-
-# Session State Setup
+# Session State Initializer
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
-if "logs" not in st.session_state:
-    st.session_state["logs"] = []
 
-# --- 1. LOGIN PORTAL ---
+# --- 4. SECURE AUTHENTICATION PORTAL ---
 if not st.session_state["logged_in"]:
-    st.title("🛡️ AEGIS-GUARD: MISSION NIGHTFALL")
-    st.caption("AIR-GAPPED AI DEFENSE MATRIX FOR SOLDIER SURVIVABILITY")
+    st.title("🛡️ AEGIS-GUARD: SECURE PORTAL")
+    st.caption("AIR-GAPPED ENCRYPTED AUTHENTICATION MATRIX")
     st.markdown("---")
     
     col_a, col_b, col_c = st.columns([1, 2, 1])
     with col_b:
-        st.markdown("""
-        <div class="hud-card" style="text-align: left; margin-bottom: 20px;">
-            <h3 style="margin-top:0;">🔑 OPERATOR AUTHENTICATION</h3>
-            <p style="font-size:0.8rem; color:#888;">INITIALIZING ZERO-TRUST MESH NODE TO PROTECT FORWARD OPERATING UNITS.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        tab1, tab2 = st.tabs(["🔒 SECURE LOGIN", "➕ REGISTER OPERATOR"])
         
-        user = st.text_input("CALL SIGN", value="ALPHA-LEADER")
-        pin = st.text_input("ACCESS PIN", type="password", value="1234")
-        role = st.selectbox("ASSIGNED ROLE", ["Base Command Officer", "Field Patrol Operator", "System Administrator"])
-        
-        if st.button("INITIALIZE MISSION CONSOLE"):
-            if user and pin:
-                st.session_state["logged_in"] = True
-                st.session_state["user"] = user
-                st.session_state["role"] = role
-                st.rerun()
+        with tab1:
+            st.markdown("##### ENTER OPERATOR CREDENTIALS")
+            user = st.text_input("CALL SIGN", value="COMMAND-01", key="login_user")
+            pin = st.text_input("ACCESS PIN / PASSWORD", type="password", value="1234", key="login_pass")
+            
+            if st.button("AUTHENTICATE SYSTEM"):
+                role = verify_user(user, pin)
+                if role:
+                    st.session_state["logged_in"] = True
+                    st.session_state["user"] = user
+                    st.session_state["role"] = role
+                    save_log(user, "User Authenticated Successfully", "INFO")
+                    st.success("AUTHENTICATION SUCCESSFUL. LOADING CONSOLE...")
+                    st.rerun()
+                else:
+                    st.error("❌ INVALID CALL SIGN OR PIN")
 
-# --- 2. MAIN TACTICAL COMMAND CONSOLE ---
+        with tab2:
+            st.markdown("##### CREATE ENCRYPTED ACCOUNT")
+            new_user = st.text_input("NEW CALL SIGN", key="reg_user")
+            new_pin = st.text_input("CREATE ACCESS PIN", type="password", key="reg_pass")
+            new_role = st.selectbox("ASSIGN ROLE", ["Base Command Officer", "Field Patrol Operator", "System Administrator"])
+            
+            if st.button("ENCRYPT & REGISTER ACCOUNT"):
+                if new_user and new_pin:
+                    if register_user(new_user, new_pin, new_role):
+                        save_log(new_user, f"New Account Created [{new_role}]", "INFO")
+                        st.success("✅ OPERATOR REGISTERED! YOU CAN NOW LOGIN.")
+                    else:
+                        st.error("⚠️ CALL SIGN ALREADY TAKEN")
+
+# --- 5. MAIN COMMAND CONSOLE ---
 else:
-    # Live Mission Ticker Tape
-    st.markdown("""
-    <div style="background: rgba(0, 255, 204, 0.05); border-top: 1px solid rgba(0,255,204,0.3); border-bottom: 1px solid rgba(0,255,204,0.3); padding: 5px 0; margin-bottom: 15px;">
-        <marquee scrollamount="6" style="font-family: 'Share Tech Mono', monospace; color: #00ffcc; font-size: 0.85rem;">
-            ● MISSION STATUS: ACTIVE BREACH PREVENTION &nbsp;&nbsp;&nbsp;
-            ● AIR-GAPPED MESH NODE #01 ONLINE &nbsp;&nbsp;&nbsp;
-            ● SOLDIER TELEMETRY SYNCED &nbsp;&nbsp;&nbsp;
-            ● EDGE LATENCY: 1.2ms &nbsp;&nbsp;&nbsp;
-            ● AI DETECTION: MULTI-SPECTRAL THERMAL
-        </marquee>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Sidebar
+    # Sidebar Setup
     st.sidebar.markdown("### 🎛️ COMMAND NODE")
     st.sidebar.markdown(f"**OPERATOR:** `{st.session_state['user']}`")
     st.sidebar.markdown(f"**ROLE:** `{st.session_state['role']}`")
     
-    if st.sidebar.button("TERMINATE SESSION"):
+    if st.sidebar.button("SECURE LOGOUT"):
+        save_log(st.session_state["user"], "Operator Terminated Session", "INFO")
         st.session_state["logged_in"] = False
         st.rerun()
 
     st.sidebar.markdown("---")
-    
-    # Radar Sweep Animation
-    st.sidebar.markdown("""
-    <div class="radar-container">
-        <div class="radar"></div>
-        <div style="font-size: 0.7rem; color: #00ffcc; letter-spacing: 2px; margin-top: 8px; font-weight: bold;">
-            PERIMETER SWEEP: ACTIVE
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
+    st.sidebar.markdown('<div class="radar"></div>', unsafe_allow_html=True)
+    st.sidebar.caption("<center>RADAR SWEEP: ACTIVE</center>", unsafe_allow_html=True)
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### 📡 SECTOR SELECTION")
+
     sector = st.sidebar.selectbox("FORWARD SECTOR", ["Sector 4-B (High Threat)", "Sector 1-A (Clear Outpost)", "Border Gate West"])
     sensor_mode = st.sidebar.radio("CV SPECTRUM FILTER", ["Real-Time Thermal", "Infrared Night Vision", "Standard Motion Bounding"])
-    enable_audio = st.sidebar.checkbox("🔊 Audio Detection Alerts", value=True)
+    enable_audio = st.sidebar.checkbox("🔊 Audio Alerts", value=True)
 
-    # Top Narrative Banner for AI Got Talent Storytelling
+    # Narrative Banner
     st.markdown("""
-    <div class="soldier-safety-banner">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <strong style="color:#ff0055; font-size:1rem; letter-spacing:1px;">⚠️ STORY SCENARIO: FORWARD PATROL IN BLACKOUT</strong>
-                <div style="color:#00ffcc; font-size:0.85rem; margin-top:4px;">
-                    Zero internet. Total radio silence. AEGIS-GUARD processes computer vision at the local edge to alert soldiers <strong>before</strong> an ambush occurs.
-                </div>
-            </div>
-            <span style="background:#ff0055; color:#ffffff; font-weight:bold; padding:4px 10px; border-radius:4px; font-size:0.75rem;">SOLDIER SHIELD ACTIVE</span>
-        </div>
+    <div style="background: rgba(255,0,85,0.15); border: 1px solid #ff0055; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px;">
+        <strong style="color: #ff0055;">⚠️ SOLDIER PROTECTION SYSTEM ACTIVE</strong><br>
+        <span style="font-size: 0.85rem; color: #00ffcc;">Edge AI local processing prevents ambush risks in air-gapped blackout zones.</span>
     </div>
     """, unsafe_allow_html=True)
 
-    # 4 Key HUD Metrics Row
+    # HUD Metrics
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        st.markdown("""
-        <div class="hud-card">
-            <div style="font-size: 0.7rem; color: #888;">TARGET DISTANCE</div>
-            <div style="font-size: 1.6rem; font-family: 'Orbitron'; font-weight: 800; color: #00ffcc;">142.4 M</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="hud-card"><div style="font-size:0.7rem; color:#888;">TARGET DISTANCE</div><div style="font-size:1.5rem; font-weight:800; color:#00ffcc;">142.4 M</div></div>', unsafe_allow_html=True)
     with m2:
-        st.markdown("""
-        <div class="hud-card">
-            <div style="font-size: 0.7rem; color: #888;">SOLDIER PULSE (BPM)</div>
-            <div style="font-size: 1.6rem; font-family: 'Orbitron'; font-weight: 800; color: #00ffcc;">78 BPM</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="hud-card"><div style="font-size:0.7rem; color:#888;">SOLDIER PULSE</div><div style="font-size:1.5rem; font-weight:800; color:#00ffcc;">78 BPM</div></div>', unsafe_allow_html=True)
     with m3:
-        st.markdown("""
-        <div class="hud-card">
-            <div style="font-size: 0.7rem; color: #888;">EDGE RESPONSE TIME</div>
-            <div style="font-size: 1.6rem; font-family: 'Orbitron'; font-weight: 800; color: #00ffcc;">1.2 ms</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="hud-card"><div style="font-size:0.7rem; color:#888;">EDGE LATENCY</div><div style="font-size:1.5rem; font-weight:800; color:#00ffcc;">1.2 ms</div></div>', unsafe_allow_html=True)
     with m4:
         is_threat = "Sector 4-B" in sector
         card_class = "hud-card-critical" if is_threat else "hud-card"
         threat_text = "LEVEL 4 BREACH" if is_threat else "SECURE"
         text_color = "#ff0055" if is_threat else "#00ffcc"
-        st.markdown(f"""
-        <div class="{card_class}">
-            <div style="font-size: 0.7rem; color: {text_color};">THREAT LEVEL</div>
-            <div style="font-size: 1.6rem; font-family: 'Orbitron'; font-weight: 800; color: {text_color};">{threat_text}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<div class="{card_class}"><div style="font-size:0.7rem; color:{text_color};">THREAT LEVEL</div><div style="font-size:1.5rem; font-weight:800; color:{text_color};">{threat_text}</div></div>', unsafe_allow_html=True)
 
     st.write("")
-
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        st.markdown("### 📹 AUTONOMOUS SCOPE & VISION MATRIX")
-        use_camera = st.checkbox("ACTIVATE AI OPTICAL STREAM", value=True)
+        st.markdown("### 📹 AUTONOMOUS VISION SCOPE")
+        use_camera = st.checkbox("ACTIVATE OPTICAL CAMERA STREAM", value=True)
         frame_window = st.image([])
 
         if use_camera:
@@ -303,78 +289,65 @@ else:
                 frame = cv2.resize(frame, (640, 360))
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 box_color = (0, 255, 0)
-                status_text = "AI THREAT LOCK: MONITORING"
+                status_text = "AI CV LOCK: ACTIVE"
 
                 if sensor_mode == "Real-Time Thermal":
                     frame = cv2.applyColorMap(gray, cv2.COLORMAP_JET)
                     box_color = (0, 255, 255)
-                    status_text = "THERMAL HEAT TRACKING: LOCK"
+                    status_text = "THERMAL HEAT SIGNATURE LOCK"
                 elif sensor_mode == "Infrared Night Vision":
                     frame = cv2.applyColorMap(gray, cv2.COLORMAP_SUMMER)
                     box_color = (0, 255, 0)
-                    status_text = "INFRARED MOTION LOCK"
+                    status_text = "INFRARED LOCK"
 
                 h, w, _ = frame.shape
                 cx, cy = w // 2, h // 2
 
-                # Tactical HUD Overlay
+                # HUD Overlay
                 cv2.rectangle(frame, (w//4, h//4), (3*w//4, 3*h//4), box_color, 2)
                 cv2.putText(frame, status_text, (w//4, h//4 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, box_color, 2)
                 cv2.circle(frame, (cx, cy), 35, box_color, 1)
-                cv2.line(frame, (cx - 45, cy), (cx + 45, cy), box_color, 1)
-                cv2.line(frame, (cx, cy - 45), (cx, cy + 45), box_color, 1)
 
                 frame_window.image(frame, channels="BGR", use_container_width=True)
 
                 if sensor_mode == "Real-Time Thermal" and enable_audio:
-                    st.components.v1.html(
-                        '<audio autoplay><source src="https://www.soundjay.com/buttons/beep-07a.mp3" type="audio/mpeg"></audio>',
-                        height=0
-                    )
+                    st.components.v1.html('<audio autoplay><source src="https://www.soundjay.com/buttons/beep-07a.mp3" type="audio/mpeg"></audio>', height=0)
             cap.release()
-        else:
-            st.info("CAM SYSTEM STANDBY. ACTIVATE BOX TO START STREAM.")
 
-        st.markdown("### 📍 INCURSION GPS MAPPING")
+        st.markdown("### 📍 INCURSION GPS MAP")
         map_data = pd.DataFrame({'lat': [28.5355], 'lon': [77.3910]})
         st.map(map_data, zoom=10)
 
     with col2:
         st.markdown("### 🚨 REAL-TIME THREAT ALERT")
         if "Sector 4-B" in sector:
-            st.error("⚠️ PERIMETER INCURSION DETECTED! EARLY WARNING DISPATCHED TO FIELD UNIT.")
+            st.error("⚠️ PERIMETER INCURSION DETECTED!")
         else:
             st.success("✅ SECTOR PERIMETER CLEAR")
 
         st.markdown("---")
-        st.markdown("### ⚡ SOLDIER PROTECTION PROTOCOLS")
+        st.markdown("### ⚡ RESPONSE PROTOCOLS")
         
         if st.session_state["role"] in ["Base Command Officer", "System Administrator"]:
-            if st.button("🚨 TRIGGER SILENT ALERT TO SOLDIERS"):
-                timestamp = time.strftime("%H:%M:%S")
-                log_msg = f"Haptic Threat Alert Sent to Patrol Team by {st.session_state['user']}"
-                st.session_state["logs"].append(log_msg)
-                st.error("🚨 HAPTIC VIBRATION ALERT SENT TO FIELD VESTS!")
-                st.components.v1.html(
-                    '<audio autoplay><source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mpeg"></audio>',
-                    height=0
-                )
+            if st.button("🚨 TRIGGER SILENT ALERT TO FIELD"):
+                save_log(st.session_state['user'], "Triggered Silent Alert to Soldiers", "WARN")
+                st.error("🚨 ALERT DISPATCHED TO SOLDIER HAPTIC VESTS!")
+                st.components.v1.html('<audio autoplay><source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mpeg"></audio>', height=0)
 
             st.write("")
-            if st.button("📡 DISPATCH AUTOMATED MESH SUPPORT"):
-                timestamp = time.strftime("%H:%M:%S")
-                log_msg = f"Air-Gapped Autonomous Drone Mesh Deployed"
-                st.session_state["logs"].append(log_msg)
+            if st.button("📡 DISPATCH MESH RECON DRONE"):
+                save_log(st.session_state['user'], "Dispatched Recon Drone Mesh", "INFO")
                 st.info("Drone Mesh Deployed for Reconnaissance.")
-        else:
-            st.info("🔒 ROLE RESTRICTED: Read-Only Access")
 
         st.markdown("---")
-        st.markdown("### 📋 IMMUTABLE AUDIT TRAIL")
-        render_terminal_log("AIR-GAPPED MESH ROUTER ONLINE", "INFO")
+        st.markdown("### 📋 PERSISTENT AUDIT TRAIL")
         
-        if st.session_state["logs"]:
-            for log in reversed(st.session_state["logs"]):
-                render_terminal_log(log, "WARN" if "Alert" in log else "INFO")
-        else:
-            st.caption("No breach events logged in this session.")
+        # Pull live audit logs from SQLite Database
+        db_logs = fetch_logs()
+        for timestamp, operator, event, level in db_logs:
+            color = "#00ffcc" if level == "INFO" else "#ff0055"
+            st.markdown(f"""
+            <div style="background: rgba(5, 15, 22, 0.9); border-left: 3px solid {color}; padding: 6px 10px; font-size: 0.8rem; color: {color}; margin-bottom: 4px;">
+                <span style="opacity: 0.6;">[{timestamp}]</span> <strong>[{operator}]</strong> {event}
+            </div>
+            """, unsafe_allow_html=True)
